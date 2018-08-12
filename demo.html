@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		.box1, .box2{
+			width: 600px;
+			height: 600px;
+			border:1px solid #000;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+	<div class="box1"></div>
+	<div class="box2"></div>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="echarts.js"></script>
+	<script type="text/javascript">
+		//初始化echarts
+		var myChart = echarts.init($('.box1')[0]);
+		var myChart1 = echarts.init($('.box2')[0]);
+		//获得数据
+		function getData(){
+			$.ajax({
+				type : 'GET',
+				url : './data.json',
+				success : function (data){
+					var data = data.sort(function (a, b){
+						return a.num - b.num;
+					});
+					getBar(data);
+				},
+				error : function (){
+					console.log("error")
+				}
+			})
+		}
+		getData();
+		//为数据排序
+		function getBar(data){
+			var option = {
+				 title: {
+			        text: '2016~2018销量',
+			        subtext: '渡一服装公司'
+			    },
+			    xAxis: {
+			        type: 'category',
+			        data: []
+			    },
+			    yAxis: {},
+			    series: [{
+			        data: [],
+			        type: 'bar'
+			    }]
+			};
+			data.forEach(function (ele, index){
+				option.xAxis.data[index] = ele.name;
+				option.series[0].data[index] = ele.num;
+			})
+			myChart.setOption(option);
+			myChart.on('click' ,function(parm){
+				getPie(parm, data);
+			})
+		}
+		function getPie(params, data){
+			console.log(data[params.dataIndex]);
+			var newData = data[params.dataIndex].year;
+			var option = {
+				title : {
+				    text: '年度具体销量',
+				},
+				tooltip : {
+				    trigger: 'item',
+				    formatter: "{a} <br/>{b} : {c} ({d}%)"
+				},
+				legend: {
+				    left: 'center',
+				    data: []
+				},
+				series : [
+				    {
+				        name: '年度销量',
+				        type: 'pie',
+				        radius : '55%',
+				        center: ['50%', '60%'],
+				        data:[],
+				    }
+				]
+			}
+			newData.forEach(function(ele, index){
+				var obj = {};
+				obj.name = ele.y;
+				obj.value = ele.num;
+				option.legend.data[index] = ele.y;
+				option.series[0].data[index] = obj;
+
+			})
+			myChart1.setOption(option);
+		}
+
+
+	</script>
+</body>
+</html>
